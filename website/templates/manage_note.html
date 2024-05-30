@@ -1,0 +1,32 @@
+<!-- Inside manage_note.html -->
+{% extends "admin_base.html" %}
+{% block title %}Manage Note{% endblock %}
+{% block content %}
+
+{% if user.is_admin %}
+    <div class="container mt-5">
+        <h1 align="center">Manage Note</h1><br>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title text-center">{{ note_to_manage.title }}</h3>
+                        <!-- Add more details as needed -->
+
+                        <form method="POST" action="{{ url_for('views.admin_delete_note', note_id=note_to_manage.id) }}" onsubmit="return confirm('Are you sure you want to delete this note?');">
+                            <button type="submit" class="btn btn-danger btn-block">Delete Note</button>
+                        </form>
+
+                        <a href="{{ url_for('views.admin_panel') }}" class="btn btn-secondary btn-block mt-3">Back to Admin Panel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-danger mt-5" role="alert">
+        You do not have permission to manage notes.
+    </div>
+{% endif %}
+
+{% endblock %}

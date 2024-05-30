@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}MyNotes{% endblock %}
+{% block content%}
+
+<div class="justity-content-center mt-2 mb-2 p-2">
+    <div class="text-center">
+        <h1>Add Note</h1>
+    </div>
+</div>
+<br>
+<form method="POST" id="addNoteForm">
+    <div class="form-group">
+        <label for="title">Note Title</label>
+        <input type="text" name="title" id="title" class="form-control" placeholder="Title" value="{{ request.form['title'] }}"><br>
+
+        <label for="note">Note Content</label>
+        <textarea name="content" id="note" class="form-control" placeholder="Content" rows="6"></textarea><br>
+
+        <label for="category_name">Category Name</label>
+        <select name="category_name" id="category_name" class="form-control">
+            <option value="">Select Category</option>
+            {% for category in user_categories if category.name != "" %}
+                <option value="{{ category.name }}">{{ category.name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="tags">Tags (comma-separated)</label>
+        <input type="text" name="tags" id="tags" class="form-control" placeholder="Tags">
+    </div>
+    
+    <div class="justity-content-center p-2">
+        <div class="text-center">
+            <button type="button" class="btn btn-primary" onclick="submitForm()">Save Changes</button>
+        </div>
+    </div>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('addNoteForm');
+        const formFields = form.querySelectorAll('input, textarea');
+    
+        formFields[0].focus();
+    
+    });
+    
+    function submitForm() {
+        document.getElementById('addNoteForm').submit();
+    }
+</script>
+
+{% endblock %}

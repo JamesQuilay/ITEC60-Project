@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+
+<div class="justify-content-center mt-2 mb-1 p-2">
+  <div class="text-center">
+    <h1>My Notes</h1>
+  </div>
+</div>
+
+<br>
+<div class="d-flex">
+  
+  <form method="GET" action="/search" class="input-group">
+
+    <!-- Filter Dropdown -->
+    <div class="input-group-prepend">
+      <button class="btn btn-outline-info dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Filter
+      </button>
+      <div class="dropdown-menu">
+        <a class="dropdown-item btn btn-outline-info" data-value="title">Title</a>
+        <a class="dropdown-item btn btn-outline-info" data-value="content">Content</a>
+        <a class="dropdown-item btn btn-outline-info" data-value="category">Category</a>
+      </div>
+      <input type="hidden" name="filter" value="title" id="filterInputHome">
+    </div>
+
+    <!-- Search with Filter-->
+    <input type="hidden" name="filter" value="title" id="filterInputHome">
+    <input type="text" name="query" class="form-control" id="searchInput" placeholder="Search Notes">
+    <div class="input-group-append">
+      <button type="submit" class="btn btn-outline-info" id="searchButton" disabled>Search</button>
+    </div>
+  </form>
+</div>
+
+<br>
+
+<!-- Add Note Button -->
+<div class="d-flex">
+  <form action="/add_note" class="mr-2"> 
+    <div class="form-group">
+      <button type="submit" class="btn btn-primary btn-sm">Add Note</button>
+    </div>
+  </form>
+
+  <form action="/manageLabels" class="mr-2">
+    <div class="form-group">
+      <button type="submit" class="btn btn-info btn-sm" id="manageNotes">Manage Labels</button>
+    </div>
+  </form>
+
+  <form action="/delete-all-notes" method="POST" onsubmit="return confirm('This action will delete all of your notes and cannot be undone. Are you sure you want to continue?');">
+    <button type="submit" class="btn btn-danger btn-sm">Delete All Notes</button>
+  </form>
+
+</div>
+
+
+<!-- user notes -->
+{% if user.notes %}
+  {% set pinned_notes = user.notes|selectattr('is_pinned')|list %}
+  {% set other_notes = user.notes|selectattr('is_pinned', 'equalto', false)|list %}
+
+  {% if pinned_notes %}
+    <p class="small text-muted">Pinned Notes</p>
+    <ul class="list-group" id="pinned-notes">
+      {% for note in pinned_notes %}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5>{{ note.title }}</h5>
+        </div>
+
+        <div class="note-content">{{ note.content }}</div>
+        {% if note.category and note.category.name %}
+          <h5 class="small text-muted">{{ note.category.name }}</h5>
+        {% endif %}
+
+        {% if note.tags %}
+          {% for tag in note.tags %}
+              <span class="badge badge-info">{{ tag.name }}</span>
+          {% endfor %}
+        {% endif %}
+        
+        <p class="small text-muted">Created on {{ note.timestamp.strftime('%B %d') }}</p>
+
+  
+        <div class="d-flex">
+          <button type="button" class="btn btn-warning btn-sm" onClick="togglePin({{ note.id }})">
+            Unpin
+          </button>
+        
+          <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle ml-2 btn-sm" type="button" id="dropdownMenuButton{{ note.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              ...
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ note.id }}">
+              <a class="dropdown-item" href="/edit-note/{{ note.id }}">
+                <i class="fas fa-pencil-alt"></i> Edit
+              </a>
+              <a class="dropdown-item btn btn-danger" onClick="deleteNoteAndRestoreConfirmation({{ note.id }})">
+                Delete
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </li>
+      <br>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if other_notes %}
+  <p class="small text-muted">Other Notes</p>
+  <ul class="list-group" id="other-notes">
+    {% for note in other_notes %}
+    <li class="list-group-item">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5>{{ note.title }}</h5>
+      </div>
+
+      <div class="note-content">{{ note.content }}</div>
+
+      {% if note.category and note.category.name %}
+        <h5 class="small text-muted">{{ note.category.name }}</h5>
+      {% endif %}
+
+      {% if note.tags %}
+        
+            {% for tag in note.tags %}
+                <span class="badge badge-info">{{ tag.name }}</span>
+            {% endfor %}
+        
+      {% endif %}
+        
+      <p class="small text-muted">Created on {{ note.timestamp.strftime('%B %d') }}</p>
+     
+      <div class="d-flex">
+        <button type="button" class="btn btn-success btn-sm" onClick="togglePin({{ note.id }})">
+          Pin
+        </button>
+      
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle ml-2 btn-sm" type="button" id="dropdownMenuButton{{ note.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            ...
+          </button>
+
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ note.id }}">
+            <a class="dropdown-item" href="/edit-note/{{ note.id }}">
+              <i class="fas fa-pencil-alt"></i> Edit
+            </a>
+            <a class="dropdown-item btn btn-danger" onClick="deleteNoteAndRestoreConfirmation({{ note.id }})">
+              Delete
+            </a>
+          </div>
+
+        </div>
+      </div>  
+    </li>
+    <br>
+    {% endfor %}
+  </ul>
+  
+{% endif %}
+{% else %}
+  <div class="alert alert-info no-auto-hide" role="alert">
+    Welcome, {{ user.first_name }}! You have no notes created. Would you like to create one?
+  </div>
+{% endif %}
+
+
+
+{% endblock %}

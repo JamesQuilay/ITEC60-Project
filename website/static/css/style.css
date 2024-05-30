@@ -1,0 +1,26 @@
+.card {
+  margin-bottom: 15px;
+}
+
+.btn-color{
+  background-color: #0e1c36;
+  color: #fff;
+  
+}
+
+.btn-color:hover {
+  color: #fff;
+}
+
+.cardbody-color{
+  background-color: #ebf2fa;
+}
+
+a{
+  text-decoration: none;
+}
+
+.note-content {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}

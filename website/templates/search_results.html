@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Search for: {{ request.args.get('query', '') }}{% endblock %}
+{% block content %}
+
+
+<div class="justify-content-center mt-2 mb-2 p-2">
+  <div class="text-center">
+    <h1>Search Results</h1>
+  </div>
+</div>
+<br>
+<div class="d-flex">
+    <form method="GET" action="/search" class="input-group">
+      <div class="input-group-prepend">
+        <button class="btn btn-outline-info dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Filter
+        </button>
+        <div class="dropdown-menu">
+          <a class="dropdown-item btn btn-outline-info" data-value="title">Title</a>
+          <a class="dropdown-item btn btn-outline-info" data-value="content">Content</a>
+          <a class="dropdown-item btn btn-outline-info" data-value="category">Category</a>
+        </div>
+        <input type="hidden" name="filter" value="title" id="filterInput">  
+      </div>
+      <input type="text" name="query" class="form-control" id="searchInput" placeholder="Search">
+      <div class="input-group-append">
+        <button type="submit" class="btn btn-outline-info" id="searchButton" disabled>Search</button>
+      </div>
+    </form>
+</div>
+
+<br>
+
+{% if results %}
+  <div class="alert alert-info no-auto-hide" role="alert">
+      Showing results for "<strong>{{ request.args.get('query', '') }}</strong>".
+  </div>
+  <ul class="list-group">
+    {% for note in results %}
+      <li class="list-group-item">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5>{{ note.title }}</h5>
+          </div>
+
+          <div class="note-content">{{ note.content }}</div>
+          {% if note.category and note.category.name %}
+            <h5 class="small text-muted">{{ note.category.name }}</h5>
+            {% endif %}
+
+          <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle btn-sm mt-1" type="button" id="dropdownMenuButton{{ note.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                ...
+              </button>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ note.id }}">
+                <a class="dropdown-item" href="/edit-note/{{ note.id }}">
+                  <i class="fas fa-pencil-alt"></i> Edit
+                </a>
+                <a class="dropdown-item btn btn-danger" onClick="deleteNoteAndRestoreConfirmation({{ note.id }})">
+                  Delete
+                </a>
+              </div>
+          </div>
+      </li>
+    <br>
+    {% endfor %}
+  </ul>
+{% else %}
+<div class="alert alert-info no-auto-hide" role="alert">
+    No matching results found for "<strong>{{ request.args.get('query', '') }}</strong>".
+</div>
+{% endif %}
+
+<script type="text/javascript">
+  // Update the filter value when a dropdown item is clicked
+  document.querySelectorAll('.dropdown-item').forEach(item => {
+    item.addEventListener('click', function() {
+      const filterValue = this.getAttribute('data-value');
+      document.getElementById('filterInput').value = filterValue;
+      document.querySelector('.dropdown-toggle').textContent = this.textContent;
+    });
+  });
+</script>
+{% endblock %}
