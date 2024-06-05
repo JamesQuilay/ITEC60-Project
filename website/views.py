@@ -81,13 +81,13 @@ def edit_note(note_id):
 
     if request.method == 'POST':
         new_title = request.form.get('title')
-        new_content = request.form.get('note')
+        new_content = request.form.get('content')
         new_category_name = request.form.get('category_name')
         new_tags = request.form.get('tags')
 
         # Check if any changes are made
         if (new_title == note.title and new_content == note.content
-                and new_category_name == note.category.name
+                and (note.category.name if note.category else '') == new_category_name
                 and new_tags == ', '.join(tag.name for tag in note.tags)):
             flash('No changes made', category='info')
             return redirect(url_for('views.home'))
@@ -97,21 +97,20 @@ def edit_note(note_id):
 
         # Update category name if it has changed
         if note.category:
-            # Check if the category name has changed
             if note.category.name != new_category_name:
                 existing_category = Category.query.filter_by(name=new_category_name, user_id=current_user.id).first()
-
                 if existing_category is None:
                     # If the new category name doesn't exist, create a new one
                     existing_category = Category(name=new_category_name, user_id=current_user.id)
                     db.session.add(existing_category)
-
                 note.category = existing_category
         else:
-            # If note.category is None, create a new category
-            new_category = Category(name=new_category_name, user_id=current_user.id)
-            db.session.add(new_category)
-            note.category = new_category
+            if new_category_name:
+                new_category = Category.query.filter_by(name=new_category_name, user_id=current_user.id).first()
+                if new_category is None:
+                    new_category = Category(name=new_category_name, user_id=current_user.id)
+                    db.session.add(new_category)
+                note.category = new_category
 
         # Update tags
         note.tags = []  # Clear existing tags
@@ -130,6 +129,7 @@ def edit_note(note_id):
         return redirect(url_for('views.home', note_id=note_id))
 
     return render_template('edit_note.html', note=note, user=current_user, user_categories=user_categories)
+
 
 
 

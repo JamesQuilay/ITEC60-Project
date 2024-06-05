@@ -2,8 +2,7 @@
 {% block title %}MyNotes{% endblock %}
 {% block content %}
 
-
-<div class="justity-content-center mt-2 mb-2 p-2">
+<div class="justify-content-center mt-2 mb-2 p-2">
     <div class="text-center">
         <h1>Edit Note</h1>
     </div>
@@ -13,35 +12,72 @@
     <div class="form-group">
         <label for="title">Note Title</label>
         <input type="text" name="title" class="form-control" placeholder="Title" value="{{ note.title }}"><br>
+
         <label for="content">Note Content</label>
-        <textarea name="note" id="content" class="form-control" placeholder="Content" rows="6">{{ note.content }}</textarea><br>
+        <textarea name="content" id="content" class="form-control" placeholder="Content" rows="6">{{ note.content }}</textarea><br>
+
         <label for="category_name">Category Name</label>
-        <select name="category_name" id="category_name" class="form-control">
-            {% for category in user_categories %}
-                <option value="{{ category.name }}" {% if category.name == note.category.name %}selected{% endif %}>
-                    {{ category.name }}
-                </option>
-            {% endfor %}
-        </select>
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                {% if note.category %}{{ note.category.name }}{% else %}Select or Enter{% endif %}
+            </button>
+            <ul class="dropdown-menu p-3" aria-labelledby="dropdownMenuButton">
+                <li>
+                    <input type="text" class="form-control" id="dropdownInput" placeholder="Enter your own value">
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                {% for category in user_categories %}
+                    <li><a class="dropdown-item" href="#" data-value="{{ category.name }}">{{ category.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <input type="hidden" name="category_name" id="categoryInput" value="{{ note.category.name if note.category else '' }}">
+
         <br>
         <label for="tags">Tags (comma-separated)</label>
         <input type="text" name="tags" class="form-control" placeholder="Tags" value="{% for tag in note.tags %}{{ tag.name }}{% if not loop.last %}, {% endif %}{% endfor %}">
     </div>
     
-    <div class="justity-content-center p-2">
+    <div class="justify-content-center p-2">
         <div class="text-center">
-            <button type="submit" class="btn btn-primary">Update Note</button>
+            <button type="button" class="btn btn-primary" onclick="submitForm()">Update Note</button>
         </div>
     </div>
 </form>
 
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('editNoteForm');
         const formFields = form.querySelectorAll('input, textarea');
         formFields[0].focus();
+
+        const dropdownInput = document.getElementById('dropdownInput');
+        const dropdownMenu = document.querySelector('.dropdown-menu');
+        const categoryInput = document.getElementById('categoryInput');
+
+        dropdownInput.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+
+        dropdownInput.addEventListener('input', function() {
+            categoryInput.value = this.value;
+            document.getElementById('dropdownMenuButton').textContent = this.value || 'Select or Enter';
+        });
+
+        dropdownMenu.querySelectorAll('.dropdown-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                categoryInput.value = this.getAttribute('data-value');
+                document.getElementById('dropdownMenuButton').textContent = this.textContent;
+            });
+        });
     });
+
     function submitForm() {
         document.getElementById('editNoteForm').submit();
     }
 </script>
+
 {% endblock %}

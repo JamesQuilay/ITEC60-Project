@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 db = SQLAlchemy()
-DB_NAME = "dcit24_db"
+DB_NAME = "itec60_db"
 
 
 def create_app():
