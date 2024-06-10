@@ -51,3 +51,4 @@ $(document).ready(function () {
         $(".alert:not(.no-auto-hide)").alert("close");
     }, 2000);
 });
+

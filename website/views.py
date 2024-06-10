@@ -1,9 +1,12 @@
 from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for, abort
 from flask_login import login_required, current_user
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from .models import Note, Category, Tag, User
 from . import db
 from werkzeug.security import generate_password_hash
 import json
+
+s = URLSafeTimedSerializer('Thisisasecret!')
 
 views = Blueprint('views', __name__)
 
@@ -36,19 +39,25 @@ def add_note():
 
         if not title and not note_content:
             flash('Empty Note Discarded.', category='success')
-
         else:
-            # Check if the category name already exists
-            category = Category.query.filter_by(name=category_name, user_id=current_user.id).first()
-            if category is None:
-                # If the category does not exist, create a new one
-                category = Category(name=category_name, user_id=current_user.id)
-                db.session.add(category)
-                db.session.commit()  # Commit the new category to the database
+            category = None
+            if category_name:
+                # Check if the category name already exists
+                category = Category.query.filter_by(name=category_name, user_id=current_user.id).first()
+                if category is None:
+                    # If the category does not exist, create a new one
+                    category = Category(name=category_name, user_id=current_user.id)
+                    db.session.add(category)
+                    db.session.commit()  # Commit the new category to the database
 
-            # Create the note and associate it with the category
-            new_note = Note(title=title, content=note_content, user_id=current_user.id, category_id=category.id)
-            
+            # Create the note and associate it with the category if it exists
+            new_note = Note(
+                title=title,
+                content=note_content,
+                user_id=current_user.id,
+                category_id=category.id if category else None  # Associate with category if it exists
+            )
+
             # Handle tags
             for tag_name in tags:
                 tag = Tag.query.filter_by(name=tag_name).first()
@@ -62,9 +71,9 @@ def add_note():
             flash('Note added!', category='success')
 
         return redirect(url_for("views.home"))
-        
 
     return render_template("add_note.html", user=current_user, user_categories=user_categories)
+
 
 
 @views.route('/edit-note/<int:note_id>', methods=['GET', 'POST'])
@@ -342,27 +351,7 @@ def delete_user(user_id):
 
     return redirect(url_for('views.admin_panel'))
 
-@views.route('/change-user-password/<int:user_id>', methods=['POST'])
-@login_required
-def change_user_password(user_id):
-    if not current_user.is_admin:
-        abort(403)  # Forbidden, as only admins can change user passwords
 
-    user_to_change_password = User.query.get(user_id)
-    if not user_to_change_password:
-        flash('User not found.', category='error')
-        return redirect(url_for('views.admin_panel'))
-
-    if request.method == 'POST':
-        new_password = request.form.get('new_password')
-
-        if len(new_password) < 4:
-            flash("The password must be 4 characters" , category='error')
-
-        else:
-            user_to_change_password.password = generate_password_hash(new_password)  # You need to import generate_password_hash
-
-            db.session.commit()
-            flash('User password changed!', category='success')
-
-    return redirect(url_for('views.manage_user', user_id=user_id))
+@views.route('/about-us', methods=['GET'])
+def aboutUS():
+    return render_template("aboutus.html")
