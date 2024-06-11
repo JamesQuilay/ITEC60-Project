@@ -351,6 +351,31 @@ def delete_user(user_id):
 
     return redirect(url_for('views.admin_panel'))
 
+@views.route('/change-user-password/<int:user_id>', methods=['POST'])
+@login_required
+def change_user_password(user_id):
+    if not current_user.is_admin:
+        abort(403)  # Forbidden, as only admins can change user passwords
+
+    user_to_change_password = User.query.get(user_id)
+    if not user_to_change_password:
+        flash('User not found.', category='error')
+        return redirect(url_for('views.admin_panel'))
+
+    if request.method == 'POST':
+        new_password = request.form.get('new_password')
+
+        if len(new_password) < 4:
+            flash("The password must be 4 characters" , category='error')
+
+        else:
+            user_to_change_password.password = generate_password_hash(new_password)  # You need to import generate_password_hash
+
+            db.session.commit()
+            flash('User password changed!', category='success')
+
+    return redirect(url_for('views.manage_user', user_id=user_id))
+
 
 @views.route('/about-us', methods=['GET'])
 def aboutUS():
